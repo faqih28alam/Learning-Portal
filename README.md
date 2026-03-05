@@ -1,4 +1,5 @@
 # 🎓 Learning Portal — AI-Powered Essay Scoring
+<img width="1347" height="620" alt="image" src="https://github.com/user-attachments/assets/49e33d74-3c25-4057-bf37-a10b8831493e" />
 
 An intelligent web application that automatically scores essay answers using **semantic similarity**. Teachers create questions with answer keys, students submit answers, and an NLP microservice instantly grades responses based on meaning — not just keyword matching.
 
@@ -47,7 +48,7 @@ learning-portal/
 │   ├── main.py                 # FastAPI app + /score endpoint
 │   └── requirements.txt
 │
-└── frontend/                   # Next.js web app
+└── client/                   # Next.js web app
     ├── Dockerfile
     ├── next.config.js
     ├── app/
@@ -162,6 +163,14 @@ For local development without Docker:
 - [Node.js 20+](https://nodejs.org/)
 - [Python 3.11+](https://www.python.org/)
 - [PostgreSQL 16+](https://www.postgresql.org/)
+
+---
+##  Preview
+<img width="1359" height="615" alt="image" src="https://github.com/user-attachments/assets/ea050798-b19e-4761-b18b-28907500e4f0" />
+<img width="1364" height="620" alt="image" src="https://github.com/user-attachments/assets/f858ac9b-1730-4e45-909d-a05558460bfe" />
+<img width="1363" height="618" alt="image" src="https://github.com/user-attachments/assets/4302fac4-22c8-402f-9ea5-0b04520ac9a8" />
+<img width="1347" height="620" alt="image" src="https://github.com/user-attachments/assets/a335e0ea-98d9-4f0f-941a-a7c48938d3c5" />
+
 
 ---
 
