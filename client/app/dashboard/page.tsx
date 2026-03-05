@@ -11,6 +11,7 @@ import { useToast } from "@/components/Toast";
 export default function DashboardPage() {
     const { show, ToastEl } = useToast();
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -20,10 +21,18 @@ export default function DashboardPage() {
     const user = getUser();
 
     useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+
+        const user = getUser();
         if (!user) { router.push("/login"); return; }
         if (user.role !== "teacher") { router.push("/questions"); return; }
+
         fetchQuestions();
-    }, []);
+    }, [mounted]);
 
     const fetchQuestions = () => {
         questionsAPI.list()
@@ -57,7 +66,7 @@ export default function DashboardPage() {
         fetchQuestions();
     };
 
-    if (loading) return (
+    if (!mounted || loading) return (
         <div className="min-h-screen bg-stone-50">
             <NavBar />
             <main className="max-w-4xl mx-auto px-6 py-10">

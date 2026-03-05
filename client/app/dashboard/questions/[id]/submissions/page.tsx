@@ -10,12 +10,20 @@ import { SubmissionCardSkeleton, StatCardSkeleton } from "@/components/Skeleton"
 export default function SubmissionsPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
     const [question, setQuestion] = useState<Question | null>(null);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(true);
     const user = getUser();
 
     useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+
+        const user = getUser();
         if (!user || user.role !== "teacher") { router.push("/login"); return; }
 
         Promise.all([
@@ -25,7 +33,7 @@ export default function SubmissionsPage() {
             setQuestion(qRes.data);
             setSubmissions(sRes.data.submissions || []);
         }).finally(() => setLoading(false));
-    }, [id]);
+    }, [mounted, id]);
 
     const avgScore = submissions.length
         ? submissions.reduce((sum, s) => sum + s.score, 0) / submissions.length
@@ -38,7 +46,7 @@ export default function SubmissionsPage() {
         return "text-red-700 bg-red-50 border-red-200";
     };
 
-    if (loading) return (
+    if (!mounted || loading) return (
         <div className="min-h-screen bg-stone-50">
             <NavBar />
             <main className="max-w-4xl mx-auto px-6 py-10">

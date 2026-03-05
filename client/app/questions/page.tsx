@@ -11,12 +11,20 @@ import {
 
 export default function QuestionsPage() {
     const router = useRouter();
+    const [mounted, setMounted] = useState(false);
     const [questions, setQuestions] = useState<Question[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [loading, setLoading] = useState(true);
     const user = getUser();
 
     useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+
+        const user = getUser();
         if (!user) { router.push("/login"); return; }
         if (user.role === "teacher") { router.push("/dashboard"); return; }
 
@@ -27,7 +35,7 @@ export default function QuestionsPage() {
             setQuestions(qRes.data.questions || []);
             setSubmissions(sRes.data.submissions || []);
         }).finally(() => setLoading(false));
-    }, []);
+    }, [mounted]);
 
     // Map question_id → best score
     const scoreMap = submissions.reduce((acc, s) => {
@@ -44,7 +52,7 @@ export default function QuestionsPage() {
         return "text-red-600 bg-red-50";
     };
 
-    if (loading) return (
+    if (!mounted || loading) return (
         <div className="min-h-screen bg-stone-50">
             <NavBar />
             <main className="max-w-3xl mx-auto px-6 py-10">
