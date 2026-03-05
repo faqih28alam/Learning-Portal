@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
@@ -20,11 +20,23 @@ class ScoreRequest(BaseModel):
     answer_key: str
     student_answer: str
 
-    @validator("answer_key", "student_answer")
-    def must_not_be_empty(cls, v):
-        if not v or not v.strip():
-            raise ValueError("must not be empty")
-        return v.strip()
+    @field_validator("answer_key")
+    def validate_answer_key(cls, v):
+        v = v.strip()
+        if len(v) < 10:
+            raise ValueError("answer_key must be at least 10 characters")
+        if len(v) > 10000:
+            raise ValueError("answer_key too long")
+        return v
+
+    @field_validator("student_answer")
+    def validate_student_answer(cls, v):
+        v = v.strip()
+        if len(v) < 5:
+            raise ValueError("student_answer must be at least 5 characters")
+        if len(v) > 10000:
+            raise ValueError("student_answer too long")
+        return v
 
 
 class ScoreResponse(BaseModel):
