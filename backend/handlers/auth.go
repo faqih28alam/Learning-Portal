@@ -6,6 +6,7 @@ import (
 	"essay-scorer/backend/config"
 	"essay-scorer/backend/middleware"
 	"essay-scorer/backend/models"
+	"essay-scorer/backend/utils"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -23,7 +24,7 @@ type RegisterRequest struct {
 func Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ValidationError(c, err)
 		return
 	}
 
@@ -68,7 +69,7 @@ type LoginRequest struct {
 func Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.ValidationError(c, err)
 		return
 	}
 
