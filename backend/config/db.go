@@ -13,14 +13,7 @@ import (
 var DB *gorm.DB
 
 func ConnectDB() {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
-	)
+	dsn := buildDSN()
 
 	var db *gorm.DB
 	var err error
@@ -41,4 +34,22 @@ func ConnectDB() {
 
 	log.Println("✅ Database connected")
 	DB = db
+}
+
+func buildDSN() string {
+	// Render provides DATABASE_URL — use it if available
+	if url := os.Getenv("DATABASE_URL"); url != "" {
+		log.Println("Using DATABASE_URL connection string")
+		return url
+	}
+
+	// Fallback to individual vars (local dev / Docker Compose)
+	return fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
 }
