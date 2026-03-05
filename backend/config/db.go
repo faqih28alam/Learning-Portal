@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -21,7 +22,19 @@ func ConnectDB() {
 		os.Getenv("DB_PORT"),
 	)
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	var db *gorm.DB
+	var err error
+
+	// Retry up to 10 times (Postgres may not be ready immediately in Docker)
+	for i := 0; i < 10; i++ {
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+		if err == nil {
+			break
+		}
+		log.Printf("⏳ Waiting for database... (%d/10)", i+1)
+		time.Sleep(2 * time.Second)
+	}
+
 	if err != nil {
 		log.Fatal("❌ Failed to connect to database:", err)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"essay-scorer/backend/config"
@@ -13,6 +14,23 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
+
+func getCORSOrigins() []string {
+	// Comma-separated origins, e.g.:
+	// "https://learning-portal.vercel.app,http://localhost:3000"
+	raw := os.Getenv("ALLOWED_ORIGINS")
+	if raw == "" {
+		return []string{"http://localhost:3000"}
+	}
+	origins := []string{}
+	for _, o := range strings.Split(raw, ",") {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			origins = append(origins, o)
+		}
+	}
+	return origins
+}
 
 func main() {
 	// Only load .env if running locally
@@ -38,23 +56,12 @@ func main() {
 
 	// ── CORS ────────────────────────────────────────────────────────
 	r.Use(cors.New(cors.Config{
-		// In production: replace with your actual frontend domain
-		AllowOrigins: []string{
-			"http://localhost:3000",
-			"http://127.0.0.1:3000",
-		},
-		AllowMethods: []string{
-			"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",
-		},
-		AllowHeaders: []string{
-			"Origin",
-			"Content-Type",
-			"Authorization",
-			"Accept",
-		},
+		AllowOrigins:     getCORSOrigins(),
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
-		MaxAge:           12 * time.Hour, // preflight cache duration
+		MaxAge:           12 * time.Hour,
 	}))
 
 	// Health check
