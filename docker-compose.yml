@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: essay_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: essay_backend
+    restart: always
+    depends_on:
+      - postgres
+      - nlp-service
+    env_file:
+      - .env
+    environment:
+      APP_ENV : docker
+      NLP_SERVICE_URL: http://nlp-service:5000
+    ports:
+      - "8080:8080"
+  
+  nlp-service:
+    build: ./nlp-service
+    container_name: essay_nlp
+    restart: always
+    ports:
+      - "5000:5000"
+
+  client:
+    build: ./client
+    container_name: essay_client
+    restart: always
+    depends_on:
+      - backend
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api/v1
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
