@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"essay-scorer/backend/config"
@@ -31,19 +32,29 @@ func toQuestionResponse(q models.Question) models.QuestionResponse {
 
 type CreateQuestionRequest struct {
 	Title     string `json:"title"      binding:"required,min=3,max=200"`
-	Body      string `json:"body"       binding:"required,min=10"`
-	AnswerKey string `json:"answer_key" binding:"required,min=20"`
+	Body      string `json:"body"       binding:"required,min=10,max=2000"`
+	AnswerKey string `json:"answer_key" binding:"required,min=20,max=5000"`
 }
 
 func CreateQuestion(c *gin.Context) {
 	var req CreateQuestionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(400, gin.H{"error": cleanValidationMsg(err.Error())})
+		return
+	}
+
+	// Trim whitespace
+	req.Title = strings.TrimSpace(req.Title)
+	req.Body = strings.TrimSpace(req.Body)
+	req.AnswerKey = strings.TrimSpace(req.AnswerKey)
+
+	// Word count guard: answer key should have substance
+	if wordCount(req.AnswerKey) < 5 {
+		c.JSON(400, gin.H{"error": "Answer key must contain at least 5 words"})
 		return
 	}
 
 	userID, _ := c.Get("user_id")
-
 	question := models.Question{
 		Title:     req.Title,
 		Body:      req.Body,
@@ -52,11 +63,11 @@ func CreateQuestion(c *gin.Context) {
 	}
 
 	if result := config.DB.Create(&question); result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create question"})
+		c.JSON(500, gin.H{"error": "failed to create question"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
+	c.JSON(201, gin.H{
 		"message":  "question created",
 		"question": toQuestionResponse(question),
 	})
@@ -195,8 +206,9 @@ func DeleteQuestion(c *gin.Context) {
 
 // ── SUBMIT Answer (Student only) ──────────────────────────────────────
 
+// Add submission word count guard
 type SubmitAnswerRequest struct {
-	AnswerText string `json:"answer_text" binding:"required,min=10"`
+	AnswerText string `json:"answer_text" binding:"required,min=10,max=10000"`
 }
 
 // scorePayload matches what Python service expects
@@ -220,6 +232,13 @@ func SubmitAnswer(c *gin.Context) {
 	var req SubmitAnswerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	req.AnswerText = strings.TrimSpace(req.AnswerText)
+
+	if wordCount(req.AnswerText) < 3 {
+		c.JSON(400, gin.H{"error": "Answer must contain at least 3 words"})
 		return
 	}
 
@@ -258,6 +277,23 @@ func SubmitAnswer(c *gin.Context) {
 		"score_percent": fmt.Sprintf("%.1f%%", score*100),
 		"submission_id": submission.ID,
 	})
+}
+
+func wordCount(s string) int {
+	return len(strings.Fields(s))
+}
+
+func cleanValidationMsg(raw string) string {
+	if strings.Contains(raw, "min=") {
+		return "One or more fields are too short"
+	}
+	if strings.Contains(raw, "max=") {
+		return "One or more fields exceed the maximum length"
+	}
+	if strings.Contains(raw, "required") {
+		return "All fields are required"
+	}
+	return raw
 }
 
 // callNLPService sends texts to Python and returns similarity score 0-1
