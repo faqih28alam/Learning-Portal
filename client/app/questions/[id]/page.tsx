@@ -162,8 +162,8 @@ export default function AnswerPage() {
                         <div className="flex items-center justify-between">
                             <span
                                 className={`text-xs ${answer.length < MIN_CHARS
-                                        ? "text-stone-400"
-                                        : "text-green-600"
+                                    ? "text-stone-400"
+                                    : "text-green-600"
                                     }`}
                             >
                                 {answer.length} characters

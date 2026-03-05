@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import { questionsAPI, Question } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
+import { QuestionCardSkeleton } from "@/components/Skeleton";
+import { useToast } from "@/components/Toast";
 
 export default function DashboardPage() {
+    const { show, ToastEl } = useToast();
     const router = useRouter();
     const [questions, setQuestions] = useState<Question[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,11 +38,13 @@ export default function DashboardPage() {
 
         try {
             await questionsAPI.create(form);
+            show("Question created successfully!", "success")
             setForm({ title: "", body: "", answer_key: "" });
             setShowForm(false);
             fetchQuestions();
         } catch (err: any) {
-            setError(err.response?.data?.error || "Failed to create question.");
+            show(err.response?.data?.error || "Failed to create question.", "error");
+            setError("");
         } finally {
             setSaving(false);
         }
@@ -48,17 +53,31 @@ export default function DashboardPage() {
     const handleDelete = async (id: number) => {
         if (!confirm("Delete this question?")) return;
         await questionsAPI.delete(id);
+        show("Question deleted.", "success");
         fetchQuestions();
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin" />
+        <div className="min-h-screen bg-stone-50">
+            <NavBar />
+            <main className="max-w-4xl mx-auto px-6 py-10">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="space-y-2">
+                        <div className="h-10 w-40 bg-stone-200 rounded-lg animate-pulse" />
+                        <div className="h-4 w-28 bg-stone-200 rounded animate-pulse" />
+                    </div>
+                    <div className="h-10 w-36 bg-stone-200 rounded-xl animate-pulse" />
+                </div>
+                <div className="space-y-3">
+                    {[1, 2, 3].map((i) => <QuestionCardSkeleton key={i} />)}
+                </div>
+            </main>
         </div>
     );
 
     return (
         <div className="min-h-screen bg-stone-50">
+            {ToastEl}
             <NavBar />
 
             <main className="max-w-4xl mx-auto px-6 py-10">

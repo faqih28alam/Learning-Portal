@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { questionsAPI, Question, Submission } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
+import { SubmissionCardSkeleton, StatCardSkeleton } from "@/components/Skeleton";
 
 export default function SubmissionsPage() {
     const { id } = useParams<{ id: string }>();
@@ -38,8 +39,22 @@ export default function SubmissionsPage() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin" />
+        <div className="min-h-screen bg-stone-50">
+            <NavBar />
+            <main className="max-w-4xl mx-auto px-6 py-10">
+                <div className="h-4 w-32 bg-stone-200 rounded animate-pulse mb-6" />
+                <div className="bg-white rounded-2xl border border-stone-100 p-6 mb-6 space-y-3">
+                    <div className="h-3 w-20 bg-stone-200 rounded animate-pulse" />
+                    <div className="h-8 w-1/2 bg-stone-200 rounded animate-pulse" />
+                    <div className="h-4 w-full bg-stone-200 rounded animate-pulse" />
+                </div>
+                <div className="grid grid-cols-3 gap-3 mb-6">
+                    {[1, 2, 3].map((i) => <StatCardSkeleton key={i} />)}
+                </div>
+                <div className="space-y-3">
+                    {[1, 2].map((i) => <SubmissionCardSkeleton key={i} />)}
+                </div>
+            </main>
         </div>
     );
 

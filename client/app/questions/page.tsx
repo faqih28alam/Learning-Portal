@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { questionsAPI, studentAPI, Question, Submission } from "@/lib/api";
 import { getUser } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
+import {
+    QuestionCardSkeleton,
+} from "@/components/Skeleton";
 
 export default function QuestionsPage() {
     const router = useRouter();
@@ -42,8 +45,17 @@ export default function QuestionsPage() {
     };
 
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-stone-300 border-t-stone-900 rounded-full animate-spin" />
+        <div className="min-h-screen bg-stone-50">
+            <NavBar />
+            <main className="max-w-3xl mx-auto px-6 py-10">
+                <div className="mb-8">
+                    <div className="h-10 w-48 bg-stone-200 rounded-lg animate-pulse mb-2" />
+                    <div className="h-4 w-32 bg-stone-200 rounded animate-pulse" />
+                </div>
+                <div className="space-y-3">
+                    {[1, 2, 3].map((i) => <QuestionCardSkeleton key={i} />)}
+                </div>
+            </main>
         </div>
     );
 
